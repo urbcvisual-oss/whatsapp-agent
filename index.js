@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
 const EVOLUTION_URL = process.env.EVOLUTION_URL;
 const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
