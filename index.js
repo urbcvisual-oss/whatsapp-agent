@@ -1,12 +1,14 @@
 const express = require('express');
 const axios = require('axios');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 
 const app = express();
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: 'https://api.groq.com/openai/v1',
+});
 
 const EVOLUTION_URL = process.env.EVOLUTION_URL;
 const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
@@ -18,10 +20,7 @@ const historico = new Map();
 
 function getHistorico(telefone) {
   if (!historico.has(telefone)) {
-    historico.set(telefone, [
-      { role: 'user',  parts: [{ text: 'Olá, qual é o seu papel?' }] },
-      { role: 'model', parts: [{ text: SYSTEM_PROMPT }] },
-    ]);
+    historico.set(telefone, []);
   }
   return historico.get(telefone);
 }
@@ -40,14 +39,23 @@ app.post('/webhook', async (req, res) => {
   const hist = getHistorico(telefone);
 
   try {
-    const chat = model.startChat({ history: hist });
-    const resultado = await chat.sendMessage(texto);
-    const resposta  = resultado.response.text();
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...hist,
+      { role: 'user', content: texto },
+    ];
 
-    hist.push({ role: 'user',  parts: [{ text: texto }] });
-    hist.push({ role: 'model', parts: [{ text: resposta }] });
+    const resultado = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages,
+    });
 
-    if (hist.length > 32) hist.splice(2, 2);
+    const resposta = resultado.choices[0].message.content;
+
+    hist.push({ role: 'user',      content: texto });
+    hist.push({ role: 'assistant', content: resposta });
+
+    if (hist.length > 30) hist.splice(0, 2);
 
     await axios.post(
       `${EVOLUTION_URL}/message/sendText/${INSTANCE}`,
@@ -59,7 +67,7 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.send('Agente WhatsApp ativo - versao 4'));
+app.get('/', (req, res) => res.send('Agente WhatsApp ativo - Groq'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor na porta ${PORT}`));
