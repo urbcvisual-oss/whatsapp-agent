@@ -49,27 +49,39 @@ REGRAS IMPORTANTES:
 - Use emojis com muita moderação
 - Nunca use listas ou tópicos nas respostas`;
 
-let db;
+let db = null;
 const humanoAtivo = new Set();
+const historicoMemoria = new Map();
 
 async function conectarMongo() {
-  const client = new MongoClient(MONGO_URL);
-  await client.connect();
-  db = client.db('whatsapp');
-  console.log('MongoDB conectado');
+  try {
+    const client = new MongoClient(MONGO_URL);
+    await client.connect();
+    db = client.db('whatsapp');
+    console.log('MongoDB conectado');
+  } catch (err) {
+    console.error('MongoDB falhou, usando memória:', err.message);
+  }
 }
 
 async function getHistorico(telefone) {
-  const doc = await db.collection('conversas').findOne({ telefone });
-  return doc ? doc.mensagens : [];
+  if (db) {
+    const doc = await db.collection('conversas').findOne({ telefone });
+    return doc ? doc.mensagens : [];
+  }
+  return historicoMemoria.get(telefone) || [];
 }
 
 async function salvarHistorico(telefone, mensagens) {
-  await db.collection('conversas').updateOne(
-    { telefone },
-    { $set: { telefone, mensagens, updatedAt: new Date() } },
-    { upsert: true }
-  );
+  if (db) {
+    await db.collection('conversas').updateOne(
+      { telefone },
+      { $set: { telefone, mensagens, updatedAt: new Date() } },
+      { upsert: true }
+    );
+  } else {
+    historicoMemoria.set(telefone, mensagens);
+  }
 }
 
 app.post('/webhook', async (req, res) => {
@@ -126,6 +138,6 @@ app.post('/webhook', async (req, res) => {
 app.get('/', (req, res) => res.send('Agente WhatsApp ativo - Groq + MongoDB'));
 
 const PORT = process.env.PORT || 3000;
-conectarMongo().then(() => {
+conectarMongo().finally(() => {
   app.listen(PORT, () => console.log(`Servidor na porta ${PORT}`));
 });
