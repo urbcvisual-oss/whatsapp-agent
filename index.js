@@ -54,6 +54,11 @@ REGRAS IMPORTANTES:
 
 let db = null;
 const humanoAtivo = new Set();
+
+const CONFIRMACOES = /^(ok|okay|oks|entendi|entendido|certo|ótimo|otimo|obrigado|obrigada|tá|ta|tá bom|ta bom|perfeito|beleza|legal|bacana|show|👍|✅|😊|valeu|vlw|tmj|massa|top|blz|até logo|ate logo|tchau|xau|flw)[\s!.]*$/i;
+function ehConfirmacao(texto) {
+  return CONFIRMACOES.test(texto.trim()) && !texto.includes('?');
+}
 const historicoMemoria = new Map();
 
 async function conectarMongo() {
@@ -104,6 +109,7 @@ app.post('/webhook', async (req, res) => {
 
   const texto = body.data.message.conversation || body.data.message.extendedTextMessage?.text;
   if (!texto) return;
+  if (ehConfirmacao(texto)) return;
 
   try {
     const hist = await getHistorico(telefone);
