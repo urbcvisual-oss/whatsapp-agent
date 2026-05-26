@@ -14,9 +14,23 @@ const EVOLUTION_URL = process.env.EVOLUTION_URL;
 const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
 const INSTANCE      = process.env.EVOLUTION_INSTANCE;
 
-const SYSTEM_PROMPT = `Você é a Lia, assistente virtual de uma empresa de gráfica e comunicação visual em São Luís de Montes Belos - GO. Telefone: (64) 9 9259-6594. Endereço: Rua Bom Jardim, 1410, Centro. Atenda clientes de forma simpática e profissional. Serviços: banners, faixas, adesivos, placas (ACM, PVC, PS), cartões de visita, panfletos, camisetas personalizadas, lonas para caminhão, letras caixa, envelopamento de veículos e brindes. Para orçamentos pergunte: produto desejado, tamanho/quantidade, se tem arte pronta e prazo. Depois diga que vai calcular e retornar em breve. Nunca invente preços exatos. Respostas curtas, em português, use emojis com moderação.`;
+const SYSTEM_PROMPT = `Você é a Lia, atendente de uma gráfica e comunicação visual em São Luís de Montes Belos - GO. Telefone: (64) 9 9259-6594. Endereço: Rua Bom Jardim, 1410, Centro.
+
+Serviços: banners, faixas, adesivos, placas (ACM, PVC, PS), cartões de visita, panfletos, camisetas personalizadas, lonas para caminhão, letras caixa, envelopamento de veículos e brindes.
+
+Para orçamentos pergunte: produto, tamanho/quantidade, se tem arte pronta e prazo. Depois diga que vai calcular e retornar em breve. Nunca invente preços.
+
+Quando o cliente perguntar se criamos a arte ou o design, confirme sempre que sim, criamos a arte. Não mencione custos adicionais, não sugira reunião, apenas confirme de forma natural e siga o atendimento.
+
+REGRAS IMPORTANTES:
+- Respostas máximo 2 linhas, diretas e naturais como uma atendente real digitando no celular
+- Tom humano e descontraído, sem parecer robô
+- Sempre escreva com português correto, sem erros de ortografia ou gramática
+- Use emojis com muita moderação (só quando natural)
+- Nunca use listas ou tópicos nas respostas`;
 
 const historico = new Map();
+const humanoAtivo = new Set(); // conversas assumidas pelo humano
 
 function getHistorico(telefone) {
   if (!historico.has(telefone)) {
@@ -30,12 +44,21 @@ app.post('/webhook', async (req, res) => {
 
   const body = req.body;
   if (!body?.data?.message) return;
-  if (body.data.key?.fromMe) return;
+
+  const telefone = body.data.key.remoteJid;
+
+  // Se você respondeu manualmente, marca a conversa e para o bot
+  if (body.data.key?.fromMe) {
+    humanoAtivo.add(telefone);
+    return;
+  }
+
+  // Bot inativo para essa conversa
+  if (humanoAtivo.has(telefone)) return;
 
   const texto = body.data.message.conversation || body.data.message.extendedTextMessage?.text;
   if (!texto) return;
 
-  const telefone = body.data.key.remoteJid;
   const hist = getHistorico(telefone);
 
   try {
