@@ -41,9 +41,10 @@ TABELA DE PREÇOS:
 - Banner/Lona: 1 m² = R$ 80
 
 REGRAS DE PREÇO PARA ADESIVOS:
-- Menos de 0,7 m²: valor mínimo de R$ 40,00 (não soma nada, é o valor total)
-- 0,7 m² ou mais: valor total = metragem × R$ 80,00 (o R$ 40 NÃO entra nessa conta)
-- Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160 | 2,1 m² = R$ 168
+- Menos de 0,7 m²: R$ 40,00 fixo (valor total)
+- De 0,7 m² até 1 m²: R$ 80,00 fixo (valor total)
+- Acima de 1 m²: metragem × R$ 80,00 (valor total)
+- Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,70 m² = R$ 80 | 1 m² = R$ 80 | 1,5 m² = R$ 120 | 2 m² = R$ 160
 
 Para produtos que não estão na tabela acima, diga que vai calcular e retornar com o valor.
 
@@ -91,7 +92,8 @@ function ehConfirmacao(texto) {
 }
 
 function calcularPrecoAdesivo(metros) {
-  if (metros < 0.7) return 'R$ 40,00 (valor mínimo de pedido)';
+  if (metros < 0.7)  return 'R$ 40,00 (valor mínimo de pedido)';
+  if (metros <= 1.0) return 'R$ 80,00';
   return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
 }
 
@@ -123,7 +125,8 @@ function getPrecoAdesivo(texto) {
 
   const preco = calcularPrecoAdesivo(metros);
   const metrosStr = metros.toFixed(2).replace('.', ',');
-  return `A metragem total é ${metrosStr} m² e o preço correto é ${preco}. ${metros < 0.7 ? 'Valor mínimo de pedido aplicado pois está abaixo de 0,7 m².' : 'Calculado a R$ 80,00/m².'} Use exatamente este valor na resposta, sem recalcular.`;
+  const regra = metros < 0.7 ? 'Abaixo de 0,7 m², valor mínimo aplicado.' : metros <= 1.0 ? 'Entre 0,7 e 1 m², valor fixo de R$ 80,00.' : 'Acima de 1 m², calculado a R$ 80,00/m².';
+  return `A metragem total é ${metrosStr} m² e o preço correto é ${preco}. ${regra} Use exatamente este valor na resposta, sem recalcular.`;
 }
 const historicoMemoria = new Map();
 
