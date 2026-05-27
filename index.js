@@ -36,13 +36,13 @@ TABELA DE PREÇOS:
 - Folheto 15x15 frente e verso: 5000 un = R$ 540
 - Folheto 15x20 frente e verso: 5000 un = R$ 630
 - Folheto 20x30 frente e verso: 5000 un = R$ 1060
-- Adesivo: 1 m² = R$ 80
-- Adesivo seethru perfurado: 1 m² = R$ 90
-- Banner/Lona: 1 m² = R$ 80
+- Adesivo: R$ 80/m²
+- Adesivo seethru perfurado: R$ 90/m²
+- Banner/Lona: R$ 80/m²
 
-REGRAS DE PREÇO PARA ADESIVOS:
-- Menos de 0,7 m²: R$ 40,00 fixo (valor total)
-- De 0,7 m² até 1 m²: R$ 80,00 fixo (valor total)
+REGRAS DE PREÇO PARA ADESIVOS E BANNERS/LONAS:
+- Menos de 0,7 m²: R$ 40,00 (valor total)
+- De 0,7 m² até 1 m²: R$ 80,00 (valor total)
 - Acima de 1 m²: metragem × R$ 80,00 (valor total)
 - Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,70 m² = R$ 80 | 1 m² = R$ 80 | 1,5 m² = R$ 120 | 2 m² = R$ 160
 
@@ -98,8 +98,8 @@ function calcularPrecoAdesivo(metros) {
 }
 
 function getPrecoAdesivo(texto) {
-  const mencionaAdesivo = /adesivo/i.test(texto);
-  if (!mencionaAdesivo) return;
+  const mencionaProduto = /adesivo|banner|lona|faixa/i.test(texto);
+  if (!mencionaProduto) return null;
 
   let metros = null;
 
