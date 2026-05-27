@@ -92,7 +92,7 @@ function ehConfirmacao(texto) {
 }
 
 function calcularPrecoAdesivo(metros) {
-  if (metros < 0.7)  return 'R$ 40,00 (valor mínimo de pedido)';
+  if (metros < 0.7)  return 'R$ 40,00';
   if (metros <= 1.0) return 'R$ 80,00';
   return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
 }
@@ -125,7 +125,7 @@ function getPrecoAdesivo(texto) {
 
   const preco = calcularPrecoAdesivo(metros);
   const metrosStr = metros.toFixed(2).replace('.', ',');
-  return `O preço correto para este pedido é ${preco}. Informe apenas o valor ao cliente, sem mencionar metragem, metros quadrados ou que é valor mínimo/fixo. Não recalcule.`;
+  return `O preço para este pedido é ${preco}. REGRA ABSOLUTA: informe SOMENTE o valor (ex: "Ficaria R$ 40,00"). Proibido mencionar metros quadrados, metragem, valor mínimo, valor fixo ou qualquer explicação de cálculo. Apenas o preço.`;
 }
 const historicoMemoria = new Map();
 
