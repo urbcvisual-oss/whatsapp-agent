@@ -99,14 +99,17 @@ function calcularPrecoAdesivo(metros) {
   return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
 }
 
-function getPrecoAdesivo(texto) {
-  const mencionaProduto = /adesivo|banner|lona|faixa/i.test(texto);
-  if (!mencionaProduto) return null;
+const PRODUTO_REGEX = /adesivo|banner|lona|faixa/i;
+
+function getPrecoAdesivo(texto, hist = []) {
+  // Verifica produto no texto atual ou nas últimas 6 mensagens do histórico
+  const contexto = [texto, ...hist.slice(-6).map(m => m.content)].join(' ');
+  if (!PRODUTO_REGEX.test(contexto)) return null;
 
   let metros = null;
 
-  // Padrão 1: quantidade + tamanho em cm (ex: "600 unidades 7x5" ou "600 adesivos 10x15")
-  const matchQtd = texto.match(/(\d+)\s*(?:unidades?|adesivos?|pe[çc]as?)?.*?(\d+[,.]?\d*)\s*[xX×]\s*(\d+[,.]?\d*)/i);
+  // Padrão 1: quantidade + tamanho em cm (ex: "350 9x6" ou "600 adesivos 10x15")
+  const matchQtd = texto.match(/(\d+)\s*(?:unidades?|adesivos?|banners?|lonas?|faixas?|pe[çc]as?)?[\s\w]*?(\d+[,.]?\d*)\s*[xX×]\s*(\d+[,.]?\d*)/i);
   if (matchQtd) {
     const qtd = parseInt(matchQtd[1]);
     const larg = parseFloat(matchQtd[2].replace(',', '.'));
@@ -135,11 +138,11 @@ function aplicarPrecoCorreto(resposta, preco) {
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  // Substitui qualquer valor R$ que o modelo tenha colocado pelo preço correto
+  // Substitui qualquer valor monetário que o modelo colocou pelo preço correto
   r = r.replace(/R\$\s*[\d.,]+/gi, preco);
+  r = r.replace(/\b\d+[,.]?\d*\s*reais\b/gi, preco);
 
-  // Se sobrou resposta vazia, gera uma mínima
-  return r || `O valor ficaria ${preco} 😊`;
+  return r || `Ficaria ${preco} 😊`;
 }
 const historicoMemoria = new Map();
 
@@ -205,7 +208,7 @@ app.post('/webhook', async (req, res) => {
   try {
     const hist = await getConversa(telefone);
 
-    const precoCalculado = getPrecoAdesivo(texto);
+    const precoCalculado = getPrecoAdesivo(texto, hist);
 
     const messages = [
       { role: 'system', content: SYSTEM_PROMPT },
