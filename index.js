@@ -40,10 +40,11 @@ TABELA DE PREÇOS:
 - Adesivo seethru perfurado: 1 m² = R$ 90
 - Banner/Lona: 1 m² = R$ 80
 
-REGRAS DE PREÇO PARA ADESIVOS — SIGA EXATAMENTE:
-- Se a quantidade for MENOR que 0,7 m²: o valor é SEMPRE R$ 40,00 fixo, independente da metragem. Nunca multiplique o valor por m² nesse caso.
-- Se a quantidade for IGUAL ou MAIOR que 0,7 m²: multiplique a metragem por R$ 80,00.
-- Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160
+REGRAS DE PREÇO PARA ADESIVOS:
+- Menos de 0,7 m²: cobra R$ 40,00 fixo (é o valor mínimo de pedido)
+- 0,7 m² ou mais: multiplica a metragem por R$ 80,00
+- Exemplos corretos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160
+- ATENÇÃO: o R$ 40 é apenas o mínimo para pedidos pequenos. Para 1 m² o valor é R$ 80, para 2 m² é R$ 160, etc.
 
 Para produtos que não estão na tabela acima, diga que vai calcular e retornar com o valor.
 
@@ -106,7 +107,7 @@ function injetarPrecoAdesivo(texto, messages) {
   const preco = calcularPrecoAdesivo(metros);
   messages.push({
     role: 'system',
-    content: `CÁLCULO AUTOMÁTICO DO SISTEMA: Para ${metros.toString().replace('.', ',')} m² de adesivo o preço correto é ${preco}. Use exatamente este valor na resposta.`
+    content: `CÁLCULO AUTOMÁTICO DO SISTEMA (use este valor exato): ${metros.toString().replace('.', ',')} m² de adesivo = ${preco}. ${metros < 0.7 ? 'É o valor mínimo pois está abaixo de 0,7m².' : 'Calculado a R$80,00 por m².'}`
   });
 }
 const historicoMemoria = new Map();
