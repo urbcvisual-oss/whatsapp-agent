@@ -41,10 +41,9 @@ TABELA DE PREÇOS:
 - Banner/Lona: 1 m² = R$ 80
 
 REGRAS DE PREÇO PARA ADESIVOS:
-- Menos de 0,7 m²: cobra R$ 40,00 fixo (é o valor mínimo de pedido)
-- 0,7 m² ou mais: multiplica a metragem por R$ 80,00
-- Exemplos corretos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160
-- ATENÇÃO: o R$ 40 é apenas o mínimo para pedidos pequenos. Para 1 m² o valor é R$ 80, para 2 m² é R$ 160, etc.
+- Menos de 0,7 m²: valor mínimo de R$ 40,00 (não soma nada, é o valor total)
+- 0,7 m² ou mais: valor total = metragem × R$ 80,00 (o R$ 40 NÃO entra nessa conta)
+- Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160 | 2,1 m² = R$ 168
 
 Para produtos que não estão na tabela acima, diga que vai calcular e retornar com o valor.
 
