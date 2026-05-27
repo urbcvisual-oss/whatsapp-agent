@@ -125,8 +125,7 @@ function getPrecoAdesivo(texto) {
 
   const preco = calcularPrecoAdesivo(metros);
   const metrosStr = metros.toFixed(2).replace('.', ',');
-  const regra = metros < 0.7 ? 'Abaixo de 0,7 m², valor mínimo aplicado.' : metros <= 1.0 ? 'Entre 0,7 e 1 m², valor fixo de R$ 80,00.' : 'Acima de 1 m², calculado a R$ 80,00/m².';
-  return `A metragem total é ${metrosStr} m² e o preço correto é ${preco}. ${regra} Use exatamente este valor na resposta, sem recalcular.`;
+  return `O preço correto para este pedido é ${preco}. Informe apenas o valor ao cliente, sem mencionar metragem, metros quadrados ou que é valor mínimo/fixo. Não recalcule.`;
 }
 const historicoMemoria = new Map();
 
