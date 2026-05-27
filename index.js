@@ -54,7 +54,11 @@ REGRAS IMPORTANTES:
 - Nunca use listas ou tópicos nas respostas`;
 
 let db = null;
-const humanoAtivo = new Set();
+const humanoRespondeuEm = new Map(); // telefone -> 'YYYY-MM-DD'
+
+function dataHoje() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 const CONFIRMACOES = /^(ok|okay|oks|entendi|entendido|certo|ótimo|otimo|obrigado|obrigada|tá|ta|tá bom|ta bom|perfeito|beleza|legal|bacana|show|👍|✅|😊|valeu|vlw|tmj|massa|top|blz|até logo|ate logo|tchau|xau|flw)[\s!.]*$/i;
 function ehConfirmacao(texto) {
@@ -73,19 +77,25 @@ async function conectarMongo() {
   }
 }
 
-async function getHistorico(telefone) {
+async function getConversa(telefone) {
   if (db) {
     const doc = await db.collection('conversas').findOne({ telefone });
-    return doc ? doc.mensagens : [];
+    if (doc) {
+      if (doc.humanoRespondeuEm) humanoRespondeuEm.set(telefone, doc.humanoRespondeuEm);
+      return doc.mensagens || [];
+    }
+    return [];
   }
   return historicoMemoria.get(telefone) || [];
 }
 
-async function salvarHistorico(telefone, mensagens) {
+async function salvarHistorico(telefone, mensagens, humanoData = null) {
   if (db) {
+    const set = { telefone, mensagens, updatedAt: new Date() };
+    if (humanoData) set.humanoRespondeuEm = humanoData;
     await db.collection('conversas').updateOne(
       { telefone },
-      { $set: { telefone, mensagens, updatedAt: new Date() } },
+      { $set: set },
       { upsert: true }
     );
   } else {
@@ -102,18 +112,21 @@ app.post('/webhook', async (req, res) => {
   const telefone = body.data.key.remoteJid;
 
   if (body.data.key?.fromMe) {
-    humanoAtivo.add(telefone);
+    humanoRespondeuEm.set(telefone, dataHoje());
+    salvarHistorico(telefone, await getConversa(telefone), dataHoje());
     return;
   }
 
-  if (humanoAtivo.has(telefone)) return;
+  // Se o humano respondeu hoje, bot fica em silêncio
+  const dataHumano = humanoRespondeuEm.get(telefone);
+  if (dataHumano === dataHoje()) return;
 
   const texto = body.data.message.conversation || body.data.message.extendedTextMessage?.text;
   if (!texto) return;
   if (ehConfirmacao(texto)) return;
 
   try {
-    const hist = await getHistorico(telefone);
+    const hist = await getConversa(telefone);
 
     const messages = [
       { role: 'system', content: SYSTEM_PROMPT },
