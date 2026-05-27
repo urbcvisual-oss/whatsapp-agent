@@ -72,6 +72,8 @@ REGRAS IMPORTANTES:
 - Mantenha sempre o contexto completo da conversa — se o cliente já informou qualquer dado, nunca peça essa informação de novo
 - Antes de responder, revise o histórico para não contrariar ou ignorar algo que o cliente já disse
 - Nunca envie mensagem de boas-vindas no meio de uma conversa já em andamento
+- Nunca mostre cálculos, metragens ou metros quadrados ao cliente — informe apenas o valor final
+- Quando o system prompt trouxer um PREÇO CALCULADO, use exatamente esse valor sem recalcular
 - Quando o cliente mandar apenas confirmações como "ok", "entendi", "certo", "ótimo", "obrigado" ou similares sem fazer nenhuma pergunta, não responda nada — só responda quando houver uma nova dúvida ou pedido
 - Tom descontraído, sem parecer robô ou script
 - Sempre escreva com português correto, sem erros de ortografia ou gramática
@@ -125,7 +127,7 @@ function getPrecoAdesivo(texto) {
 
   const preco = calcularPrecoAdesivo(metros);
   const metrosStr = metros.toFixed(2).replace('.', ',');
-  return `O preço para este pedido é ${preco}. REGRA ABSOLUTA: informe SOMENTE o valor (ex: "Ficaria R$ 40,00"). Proibido mencionar metros quadrados, metragem, valor mínimo, valor fixo ou qualquer explicação de cálculo. Apenas o preço.`;
+  return `PREÇO CALCULADO PARA ESTA MENSAGEM: ${preco}. Use este valor exato. Não recalcule. Não mencione metragem, metros quadrados, cálculo ou explicação — só o preço.`;
 }
 const historicoMemoria = new Map();
 
