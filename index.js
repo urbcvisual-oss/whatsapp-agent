@@ -194,16 +194,17 @@ app.post('/webhook', async (req, res) => {
     return;
   }
 
-  // Se o humano respondeu hoje, bot fica em silêncio
-  const dataHumano = humanoRespondeuEm.get(telefone);
-  if (dataHumano === dataHoje()) return;
-
   const texto = body.data.message.conversation || body.data.message.extendedTextMessage?.text;
   if (!texto) return;
   if (ehConfirmacao(texto)) return;
 
   try {
+    // Carrega histórico primeiro — isso também restaura humanoRespondeuEm do MongoDB
     const hist = await getConversa(telefone);
+
+    // Se o humano respondeu hoje, bot fica em silêncio (verificação após carregar do banco)
+    const dataHumano = humanoRespondeuEm.get(telefone);
+    if (dataHumano === dataHoje()) return;
 
     const precoCalculado = getPrecoAdesivo(texto, hist);
 
