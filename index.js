@@ -93,13 +93,6 @@ function ehConfirmacao(texto) {
   return CONFIRMACOES.test(texto.trim()) && !texto.includes('?');
 }
 
-function limparCalculoDaResposta(resposta) {
-  return resposta
-    .replace(/[^.!?\n]*(?:\d+[,.]?\d*\s*m[²2]\b|metros?\s*quadrados?|precisar\s+de\s+aproximadamente)[^.!?\n]*[.!?]?\s*/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
 function calcularPrecoAdesivo(metros) {
   if (metros < 0.7)  return 'R$ 40,00';
   if (metros <= 1.0) return 'R$ 80,00';
@@ -118,7 +111,6 @@ function getPrecoAdesivo(texto) {
     const qtd = parseInt(matchQtd[1]);
     const larg = parseFloat(matchQtd[2].replace(',', '.'));
     const alt  = parseFloat(matchQtd[3].replace(',', '.'));
-    // assume cm se valores < 200, senão mm
     const fator = (larg > 200 || alt > 200) ? 1000 : 100;
     metros = qtd * (larg / fator) * (alt / fator);
   }
@@ -132,9 +124,22 @@ function getPrecoAdesivo(texto) {
 
   if (!metros || isNaN(metros)) return null;
 
-  const preco = calcularPrecoAdesivo(metros);
-  const metrosStr = metros.toFixed(2).replace('.', ',');
-  return `PREÇO CALCULADO PARA ESTA MENSAGEM: ${preco}. Use este valor exato. Não recalcule. Não mencione metragem, metros quadrados, cálculo ou explicação — só o preço.`;
+  return calcularPrecoAdesivo(metros);
+}
+
+function aplicarPrecoCorreto(resposta, preco) {
+  // Remove qualquer frase que mencione metragem ou cálculo de área
+  let r = resposta
+    .replace(/[^.!?\n]*\d+[,.]?\d*\s*m(?:etros?\s*quadrados?|[²2])[^.!?\n]*[.!?]?\s*/gi, '')
+    .replace(/[^.!?\n]*(?:precis(?:a|ar)[^.!?\n]*aproximadamente|metros?\s*quadrados?)[^.!?\n]*[.!?]?\s*/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // Substitui qualquer valor R$ que o modelo tenha colocado pelo preço correto
+  r = r.replace(/R\$\s*[\d.,]+/gi, preco);
+
+  // Se sobrou resposta vazia, gera uma mínima
+  return r || `O valor ficaria ${preco} 😊`;
 }
 const historicoMemoria = new Map();
 
@@ -200,15 +205,12 @@ app.post('/webhook', async (req, res) => {
   try {
     const hist = await getConversa(telefone);
 
-    const precoInjetado = getPrecoAdesivo(texto);
-    const userContent = precoInjetado
-      ? `[PREÇO CALCULADO PELO SISTEMA: ${precoInjetado} — responda SOMENTE com o valor, sem mencionar metragem ou cálculo]\n${texto}`
-      : texto;
+    const precoCalculado = getPrecoAdesivo(texto);
 
     const messages = [
       { role: 'system', content: SYSTEM_PROMPT },
       ...hist,
-      { role: 'user', content: userContent },
+      { role: 'user', content: texto },
     ];
 
     const resultado = await groq.chat.completions.create({
@@ -217,7 +219,7 @@ app.post('/webhook', async (req, res) => {
     });
 
     let resposta = resultado.choices[0].message.content;
-    if (precoInjetado) resposta = limparCalculoDaResposta(resposta);
+    if (precoCalculado) resposta = aplicarPrecoCorreto(resposta, precoCalculado);
 
     hist.push({ role: 'user',      content: texto });
     hist.push({ role: 'assistant', content: resposta });
