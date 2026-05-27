@@ -93,6 +93,13 @@ function ehConfirmacao(texto) {
   return CONFIRMACOES.test(texto.trim()) && !texto.includes('?');
 }
 
+function limparCalculoDaResposta(resposta) {
+  return resposta
+    .replace(/[^.!?\n]*(?:\d+[,.]?\d*\s*m[²2]\b|metros?\s*quadrados?|precisar\s+de\s+aproximadamente)[^.!?\n]*[.!?]?\s*/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function calcularPrecoAdesivo(metros) {
   if (metros < 0.7)  return 'R$ 40,00';
   if (metros <= 1.0) return 'R$ 80,00';
@@ -209,7 +216,8 @@ app.post('/webhook', async (req, res) => {
       messages,
     });
 
-    const resposta = resultado.choices[0].message.content;
+    let resposta = resultado.choices[0].message.content;
+    if (precoInjetado) resposta = limparCalculoDaResposta(resposta);
 
     hist.push({ role: 'user',      content: texto });
     hist.push({ role: 'assistant', content: resposta });
