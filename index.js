@@ -95,7 +95,7 @@ function calcularPrecoAdesivo(metros) {
   return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
 }
 
-function injetarPrecoAdesivo(texto, messages) {
+function getPrecoAdesivo(texto) {
   const mencionaAdesivo = /adesivo/i.test(texto);
   if (!mencionaAdesivo) return;
 
@@ -119,14 +119,11 @@ function injetarPrecoAdesivo(texto, messages) {
     if (matchM2) metros = parseFloat(matchM2[1].replace(',', '.'));
   }
 
-  if (!metros || isNaN(metros)) return;
+  if (!metros || isNaN(metros)) return null;
 
   const preco = calcularPrecoAdesivo(metros);
   const metrosStr = metros.toFixed(2).replace('.', ',');
-  messages.push({
-    role: 'system',
-    content: `CÁLCULO AUTOMÁTICO DO SISTEMA (use este valor exato): ${metrosStr} m² de adesivo = ${preco}. ${metros < 0.7 ? 'Valor mínimo de pedido aplicado.' : 'Calculado a R$ 80,00/m².'}`
-  });
+  return `A metragem total é ${metrosStr} m² e o preço correto é ${preco}. ${metros < 0.7 ? 'Valor mínimo de pedido aplicado pois está abaixo de 0,7 m².' : 'Calculado a R$ 80,00/m².'} Use exatamente este valor na resposta, sem recalcular.`;
 }
 const historicoMemoria = new Map();
 
@@ -192,13 +189,16 @@ app.post('/webhook', async (req, res) => {
   try {
     const hist = await getConversa(telefone);
 
+    const precoInjetado = getPrecoAdesivo(texto);
+    const systemContent = precoInjetado
+      ? SYSTEM_PROMPT + '\n\nCÁLCULO OBRIGATÓRIO PARA ESTA MENSAGEM: ' + precoInjetado
+      : SYSTEM_PROMPT;
+
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemContent },
       ...hist,
       { role: 'user', content: texto },
     ];
-
-    injetarPrecoAdesivo(texto, messages);
 
     const resultado = await groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
