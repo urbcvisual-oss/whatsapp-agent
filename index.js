@@ -89,6 +89,26 @@ const CONFIRMACOES = /^(ok|okay|oks|entendi|entendido|certo|ótimo|otimo|obrigad
 function ehConfirmacao(texto) {
   return CONFIRMACOES.test(texto.trim()) && !texto.includes('?');
 }
+
+function calcularPrecoAdesivo(metros) {
+  if (metros < 0.7) return 'R$ 40,00 (valor mínimo)';
+  return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
+}
+
+function injetarPrecoAdesivo(texto, messages) {
+  const mencionaAdesivo = /adesivo/i.test(texto);
+  if (!mencionaAdesivo) return;
+  const match = texto.match(/(\d+[,.]?\d*)\s*m[²2²]?/i) ||
+                texto.match(/(\d+[,.]?\d*)\s*metro[s]?\s*quadrado[s]?/i);
+  if (!match) return;
+  const metros = parseFloat(match[1].replace(',', '.'));
+  if (isNaN(metros)) return;
+  const preco = calcularPrecoAdesivo(metros);
+  messages.push({
+    role: 'system',
+    content: `CÁLCULO AUTOMÁTICO DO SISTEMA: Para ${metros.toString().replace('.', ',')} m² de adesivo o preço correto é ${preco}. Use exatamente este valor na resposta.`
+  });
+}
 const historicoMemoria = new Map();
 
 async function conectarMongo() {
@@ -158,6 +178,8 @@ app.post('/webhook', async (req, res) => {
       ...hist,
       { role: 'user', content: texto },
     ];
+
+    injetarPrecoAdesivo(texto, messages);
 
     const resultado = await groq.chat.completions.create({
       model: 'llama-3.1-8b-instant',
