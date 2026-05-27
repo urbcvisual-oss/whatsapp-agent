@@ -99,15 +99,34 @@ function calcularPrecoAdesivo(metros) {
 function injetarPrecoAdesivo(texto, messages) {
   const mencionaAdesivo = /adesivo/i.test(texto);
   if (!mencionaAdesivo) return;
-  const match = texto.match(/(\d+[,.]?\d*)\s*m[²2²]?/i) ||
-                texto.match(/(\d+[,.]?\d*)\s*metro[s]?\s*quadrado[s]?/i);
-  if (!match) return;
-  const metros = parseFloat(match[1].replace(',', '.'));
-  if (isNaN(metros)) return;
+
+  let metros = null;
+
+  // Padrão 1: quantidade + tamanho em cm (ex: "600 unidades 7x5" ou "600 adesivos 10x15")
+  const matchQtd = texto.match(/(\d+)\s*(?:unidades?|adesivos?|pe[çc]as?)?.*?(\d+[,.]?\d*)\s*[xX×]\s*(\d+[,.]?\d*)/i);
+  if (matchQtd) {
+    const qtd = parseInt(matchQtd[1]);
+    const larg = parseFloat(matchQtd[2].replace(',', '.'));
+    const alt  = parseFloat(matchQtd[3].replace(',', '.'));
+    // assume cm se valores < 200, senão mm
+    const fator = (larg > 200 || alt > 200) ? 1000 : 100;
+    metros = qtd * (larg / fator) * (alt / fator);
+  }
+
+  // Padrão 2: metragem direta (ex: "0,5 m²" ou "2 metros quadrados")
+  if (!metros) {
+    const matchM2 = texto.match(/(\d+[,.]?\d*)\s*m[²2]/i) ||
+                    texto.match(/(\d+[,.]?\d*)\s*metro[s]?\s*quadrado[s]?/i);
+    if (matchM2) metros = parseFloat(matchM2[1].replace(',', '.'));
+  }
+
+  if (!metros || isNaN(metros)) return;
+
   const preco = calcularPrecoAdesivo(metros);
+  const metrosStr = metros.toFixed(2).replace('.', ',');
   messages.push({
     role: 'system',
-    content: `CÁLCULO AUTOMÁTICO DO SISTEMA (use este valor exato): ${metros.toString().replace('.', ',')} m² de adesivo = ${preco}. ${metros < 0.7 ? 'É o valor mínimo pois está abaixo de 0,7m².' : 'Calculado a R$80,00 por m².'}`
+    content: `CÁLCULO AUTOMÁTICO DO SISTEMA (use este valor exato): ${metrosStr} m² de adesivo = ${preco}. ${metros < 0.7 ? 'Valor mínimo de pedido aplicado.' : 'Calculado a R$ 80,00/m².'}`
   });
 }
 const historicoMemoria = new Map();
