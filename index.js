@@ -131,18 +131,15 @@ function getPrecoAdesivo(texto, hist = []) {
 }
 
 function aplicarPrecoCorreto(resposta, preco) {
-  // Remove qualquer frase que mencione metragem ou cálculo de área
-  let r = resposta
-    .replace(/[^.!?\n]*\d+[,.]?\d*\s*m(?:etros?\s*quadrados?|[²2])[^.!?\n]*[.!?]?\s*/gi, '')
-    .replace(/[^.!?\n]*(?:precis(?:a|ar)[^.!?\n]*aproximadamente|metros?\s*quadrados?)[^.!?\n]*[.!?]?\s*/gi, '')
+  // Remove toda sentença que mencione preço, metragem ou cálculo
+  const filtrado = resposta
+    .replace(/[^.!?\n]*(?:R\$|\breais\b|m[²2]|metros?\s*quadrados?|precis[ao]r?\b|aproximadamente|\d+[,.]?\d*\s*[xX×]\s*\d)[^.!?\n]*[.!?\n]?\s*/gi, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  // Substitui qualquer valor monetário que o modelo colocou pelo preço correto
-  r = r.replace(/R\$\s*[\d.,]+/gi, preco);
-  r = r.replace(/\b\d+[,.]?\d*\s*reais\b/gi, preco);
-
-  return r || `Ficaria ${preco} 😊`;
+  // Garante que o preço correto seja sempre o único valor enviado
+  const valorFinal = `O valor ficaria ${preco}.`;
+  return filtrado ? `${filtrado} ${valorFinal}` : valorFinal;
 }
 const historicoMemoria = new Map();
 
