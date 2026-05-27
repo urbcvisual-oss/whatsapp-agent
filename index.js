@@ -40,9 +40,10 @@ TABELA DE PREÇOS:
 - Adesivo seethru perfurado: 1 m² = R$ 90
 - Banner/Lona: 1 m² = R$ 80
 
-REGRAS DE PREÇO PARA ADESIVOS:
-- Quantidade menor que 0,7 m²: valor fixo de R$ 40
-- Quantidade igual ou maior que 0,7 m²: R$ 80 por m² (calcule proporcionalmente)
+REGRAS DE PREÇO PARA ADESIVOS — SIGA EXATAMENTE:
+- Se a quantidade for MENOR que 0,7 m²: o valor é SEMPRE R$ 40,00 fixo, independente da metragem. Nunca multiplique o valor por m² nesse caso.
+- Se a quantidade for IGUAL ou MAIOR que 0,7 m²: multiplique a metragem por R$ 80,00.
+- Exemplos: 0,14 m² = R$ 40 | 0,5 m² = R$ 40 | 0,7 m² = R$ 56 | 1 m² = R$ 80 | 2 m² = R$ 160
 
 Para produtos que não estão na tabela acima, diga que vai calcular e retornar com o valor.
 
