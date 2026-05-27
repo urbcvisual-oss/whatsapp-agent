@@ -92,7 +92,7 @@ function ehConfirmacao(texto) {
 }
 
 function calcularPrecoAdesivo(metros) {
-  if (metros < 0.7) return 'R$ 40,00 (valor mínimo)';
+  if (metros < 0.7) return 'R$ 40,00 (valor mínimo de pedido)';
   return 'R$ ' + (metros * 80).toFixed(2).replace('.', ',');
 }
 
