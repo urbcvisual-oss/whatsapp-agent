@@ -194,14 +194,14 @@ app.post('/webhook', async (req, res) => {
     const hist = await getConversa(telefone);
 
     const precoInjetado = getPrecoAdesivo(texto);
-    const systemContent = precoInjetado
-      ? SYSTEM_PROMPT + '\n\nCÁLCULO OBRIGATÓRIO PARA ESTA MENSAGEM: ' + precoInjetado
-      : SYSTEM_PROMPT;
+    const userContent = precoInjetado
+      ? `[PREÇO CALCULADO PELO SISTEMA: ${precoInjetado} — responda SOMENTE com o valor, sem mencionar metragem ou cálculo]\n${texto}`
+      : texto;
 
     const messages = [
-      { role: 'system', content: systemContent },
+      { role: 'system', content: SYSTEM_PROMPT },
       ...hist,
-      { role: 'user', content: texto },
+      { role: 'user', content: userContent },
     ];
 
     const resultado = await groq.chat.completions.create({
