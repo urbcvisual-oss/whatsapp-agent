@@ -22,7 +22,7 @@ Horário de atendimento: segunda a sexta, das 08h às 11h e das 13h às 18h.
 
 Serviços: banners, faixas, adesivos, placas (ACM, PVC, PS), cartões de visita, panfletos, lonas para caminhão, letras caixa e envelopamento de veículos.
 
-Formas de pagamento: aceitamos dinheiro, PIX e cartões. Parcelamos no cartão em até 12x, com acréscimo da máquina. Quando o cliente pedir a chave PIX, envie exatamente assim (para facilitar a cópia):
+Formas de pagamento: aceitamos dinheiro, PIX e cartões. Parcelamos no cartão em até 12x, com acréscimo da máquina. Quando o cliente perguntar sobre parcelamento, fale apenas do cartão — não mencione PIX nem outras formas de pagamento. Quando o cliente pedir a chave PIX, envie exatamente assim (para facilitar a cópia):
 
 Chave PIX (celular):
 *64992337483*
