@@ -124,7 +124,17 @@ function getPrecoAdesivo(texto, hist = []) {
     metros = qtd * (larg / fator) * (alt / fator);
   }
 
-  // Padrão 2: metragem direta (ex: "0,5 m²" ou "2 metros quadrados")
+  // Padrão 2: dimensões em metros (ex: "1,3m x 3,1m" ou "1.5 x 2 metros")
+  if (!metros) {
+    const matchDimM = texto.match(/(\d+[,.]?\d*)\s*m?\s*[xX×por]\s*(\d+[,.]?\d*)\s*m/i);
+    if (matchDimM) {
+      const larg = parseFloat(matchDimM[1].replace(',', '.'));
+      const alt  = parseFloat(matchDimM[2].replace(',', '.'));
+      if (larg <= 50 && alt <= 50) metros = larg * alt;
+    }
+  }
+
+  // Padrão 3: metragem direta (ex: "0,5 m²" ou "2 metros quadrados")
   if (!metros) {
     const matchM2 = texto.match(/(\d+[,.]?\d*)\s*m[²2]/i) ||
                     texto.match(/(\d+[,.]?\d*)\s*metro[s]?\s*quadrado[s]?/i);
